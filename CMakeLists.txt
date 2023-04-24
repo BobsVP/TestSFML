@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+﻿cmake_minimum_required(VERSION 3.13)
 
 project(SFMLTest VERSION 1.0 
  DESCRIPTION "SFML test"
@@ -11,9 +11,12 @@ if(UNIX AND NOT APPLE)
     set(SFML_DIR "${CMAKE_CURRENT_SOURCE_DIR}/SFML-2.5.1/lib/cmake/SFML")
 # Условие для операционной системы Windows
 elseif(WIN32)
-    set(SFML_DIR "${CMAKE_CURRENT_SOURCE_DIR}/SFML-2.5.1/lib/cmake/SFML")
+    set(SFML_DIR "${CMAKE_CURRENT_SOURCE_DIR}/SFML-2.5.1win/lib/cmake/SFML")
 endif()
-
+#Убрать окно консоли
+#set(CMAKE_CREATE_WIN32_EXE "/SUBSYSTEM:WINDOWS /ENTRY:\"mainCRTStartup\"")
+#Устанавливаем статическую линковку библиотек
+set(SFML_STATIC_LIBRARIES TRUE)
 # Подключаем SFML
 find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
 
