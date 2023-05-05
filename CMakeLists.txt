@@ -6,6 +6,8 @@ project(SFMLTest VERSION 1.0
 set(CMAKE_CXX_STANDARD 11)
 set(SOURCES main.cpp)
 
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/obj/")
+message("${CMAKE_CURRENT_SOURCE_DIR}/obj/")
 # Условие для операционной системы Ubuntu
 if(UNIX AND NOT APPLE)
     set(SFML_DIR "${CMAKE_CURRENT_SOURCE_DIR}/SFML-2.5.1/lib/cmake/SFML")

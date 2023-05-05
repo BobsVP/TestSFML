@@ -1,9 +1,13 @@
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #include <SFML/Graphics.hpp>
+#include<iostream>
 #include<cmath>
+#include<fstream>
+#include <sstream>
+
 
 unsigned const WIGHT = 800;
-unsigned const HEIGHT = 600;
+unsigned const HEIGHT = 800;
 
 void line(unsigned x0, unsigned y0, unsigned x1, unsigned y1, sf::VertexArray& vert, const sf::Color& colr) {
     if (x0 > WIGHT || x1 > WIGHT)
@@ -52,14 +56,57 @@ void line(unsigned x0, unsigned y0, unsigned x1, unsigned y1, sf::VertexArray& v
     }
 }
 
+void Parser_file(const char* file_name, std::vector<sf::Vector3f>& v_, std::vector<int>& f_)
+{
+    std::ifstream in;
+    in.open(file_name, std::ifstream::in);
+    if (in.fail()) { 
+        std::cout << "Failed to open file\n";
+        exit(EXIT_FAILURE); 
+    }
+    std::string line;
+    while (!in.eof()) {
+        std::getline(in, line);
+        std::istringstream iss(line.c_str());
+        char trash;
+        if (!line.compare(0, 2, "v ")) {
+            iss >> trash;
+            sf::Vector3f z;
+            iss >> z.x >> z.y >> z.z;
+            v_.push_back(z); 
+        }
+        else if (!line.compare(0, 2, "f ")) {
+            int itrash, idx;
+            iss >> trash;
+            while (iss >> idx >> trash >> itrash >> trash >> itrash) {
+                idx--; 
+                f_.push_back(idx);
+            }
+        }
+    }
+    in.close();
+}
+
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(WIGHT, HEIGHT), "simplified OpenGL");
     sf::VertexArray vertex(sf::Points);
-    line(10, 10, 300, 500, vertex, sf::Color::White);
-    line(300, 500, 600, 10, vertex, sf::Color::Red);
-    line(10, 10, 600, 10, vertex, sf::Color::Red);
 
+    std::vector<sf::Vector3f> v;
+    std::vector<int> f;
+    char* file_name = "..//obj//african_head.obj";
+    Parser_file(file_name, v, f);
+    for (int i = 0; i < f.size() - 1; i += 3) {
+        unsigned x0 = (v[f[i]].x + 1.) * WIGHT / 2.;
+        unsigned y0 = (v[f[i]].y + 1.) * HEIGHT / 2.;
+        unsigned x1 = (v[f[i + 1]].x + 1.) * WIGHT / 2.;
+        unsigned y1 = (v[f[i + 1]].y + 1.) * HEIGHT / 2.;
+        unsigned x2 = (v[f[i + 2]].x + 1.) * WIGHT / 2.;
+        unsigned y2 = (v[f[i + 2]].y + 1.) * HEIGHT / 2.;
+        line(x0, y0, x1, y1, vertex, sf::Color::White);
+        line(x0, y0, x2, y2, vertex, sf::Color::White);
+        line(x2, y2, x1, y1, vertex, sf::Color::White);
+    }
+    sf::RenderWindow window(sf::VideoMode(WIGHT, HEIGHT), "simplified OpenGL");
     while (window.isOpen())
     {
         sf::Event event;
