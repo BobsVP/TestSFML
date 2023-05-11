@@ -7,18 +7,19 @@ set(CMAKE_CXX_STANDARD 11)
 set(SOURCES main.cpp)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/obj/")
-message("${CMAKE_CURRENT_SOURCE_DIR}/obj/")
+#message("${CMAKE_CURRENT_SOURCE_DIR}/obj/")
 # Условие для операционной системы Ubuntu
 if(UNIX AND NOT APPLE)
     set(SFML_DIR "${CMAKE_CURRENT_SOURCE_DIR}/SFML-2.5.1/lib/cmake/SFML")
 # Условие для операционной системы Windows
 elseif(WIN32)
     set(SFML_DIR "${CMAKE_CURRENT_SOURCE_DIR}/SFML-2.5.1win/lib/cmake/SFML")
+    #Устанавливаем статическую линковку библиотек
+    set(SFML_STATIC_LIBRARIES TRUE)
 endif()
 #Убрать окно консоли
 #set(CMAKE_CREATE_WIN32_EXE "/SUBSYSTEM:WINDOWS /ENTRY:\"mainCRTStartup\"")
-#Устанавливаем статическую линковку библиотек
-set(SFML_STATIC_LIBRARIES TRUE)
+
 # Подключаем SFML
 find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
 
