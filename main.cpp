@@ -9,54 +9,68 @@ unsigned const WIDTH = 800;
 unsigned const HEIGHT = 800;
 struct Model
 {
-     sf::VertexArray vertex;
-     std::vector<sf::Vector3f> v;
-     std::vector<int> f;
+    Model() {
+        for (size_t i = 0; i < WIDTH * HEIGHT; ++i)
+            Z_bufer[i] = std::numeric_limits<int>::min();
+    }
+    sf::VertexArray vertex;
+    std::vector<sf::Vector3f> v;
+    std::vector<int> f;
+    std::unique_ptr<int[]> Z_bufer = std::make_unique<int[]> (WIDTH * HEIGHT);
 };
 
-void line2(sf::Vector2f x0, sf::Vector2f x1, sf::VertexArray& vert, const sf::Color& colr) {
+void line2(sf::Vector3i x0, sf::Vector3i x1, Model& modl, const sf::Color& colr) {
     if ((x1.y - x0.y) == 0)
     {
         if (x0.x > x1.x) std::swap(x0, x1);
         int y = x0.y;
+        float t1 = (x1.z - x0.z) / (float)(x1.x - x0.x);
+        float dt1 = 0;
         for (int x = x0.x; x <= x1.x; x++)
         {
-            vert.append(sf::Vector2f(x, y));
-            vert[vert.getVertexCount() - 1].color = colr;
+            int z = x0.z + dt1;
+            dt1 += t1;
+            if (z > modl.Z_bufer[x + WIDTH * y]) {
+                modl.Z_bufer[x + WIDTH * y] = z;
+                modl.vertex.append(sf::Vector2f(x, y));
+                modl.vertex[modl.vertex.getVertexCount() - 1].color = colr;
+            }
         }
     }
 }
 
-void line1(sf::Vector2i x0, sf::Vector2i x1, sf::VertexArray& vert, const sf::Color& colr) {
+void line1(sf::Vector3i x0, sf::Vector3i x1, std::vector<sf::Vector3i>& vert) {
     if (x0.y > x1.y) std::swap(x0, x1);
     float t = (x1.x - x0.x) / (float)(x1.y - x0.y);
-    float dt = 0;
+    float t1 = (x1.z - x0.z) / (float)(x1.y - x0.y);
+    float dt = 0, dt1 = 0;
     for (int x = x0.y; x <= x1.y; x++) {
         int y = x0.x + dt;
+        int z = x0.z + dt1;
         dt += t;
-        vert.append(sf::Vector2f(y, HEIGHT - x));
-        vert[vert.getVertexCount() - 1].color = colr;
+        dt1 += t1;
+        vert.push_back(sf::Vector3i(y, HEIGHT - x, z));
     }
 }
 
-void triangle(sf::Vector2i t0, sf::Vector2i t1, sf::Vector2i t2, sf::VertexArray& vert, const sf::Color& colr) {
+void triangle(sf::Vector3i t0, sf::Vector3i t1, sf::Vector3i t2, Model& vert, const sf::Color& colr) {
     if (t0.y > t1.y) std::swap(t0, t1);
     if (t0.y > t2.y) std::swap(t0, t2);
     if (t1.y > t2.y) std::swap(t1, t2);
 
-    sf::VertexArray vertexTriangle1(sf::Points);
-    sf::VertexArray vertexTriangle2(sf::Points);
-    sf::VertexArray vertexTriangle3(sf::Points);
+    std::vector<sf::Vector3i> vertexTriangle1;
+    std::vector<sf::Vector3i> vertexTriangle2;
+    std::vector<sf::Vector3i> vertexTriangle3;
 
-    line1(t0, t1, vertexTriangle1, colr);
-    line1(t1, t2, vertexTriangle2, colr);
-    line1(t2, t0, vertexTriangle3, colr);
+    line1(t0, t1, vertexTriangle1);
+    line1(t1, t2, vertexTriangle2);
+    line1(t2, t0, vertexTriangle3);
 
     for (int i = 0; i < t1.y - t0.y; ++i) {
-        line2(vertexTriangle1.operator[](i).position, vertexTriangle3.operator[](i).position, vert, colr);
+        line2(vertexTriangle1.operator[](i), vertexTriangle3.operator[](i), vert, colr);
     }
     for (int i = t2.y - t0.y; i >= t1.y - t0.y; --i) {
-        line2(vertexTriangle2.operator[](i - t1.y + t0.y).position, vertexTriangle3.operator[](i).position, vert, colr);
+        line2(vertexTriangle2.operator[](i - t1.y + t0.y), vertexTriangle3.operator[](i), vert, colr);
     }
 }
 
@@ -93,19 +107,23 @@ void Parser_file(const char* file_name, std::vector<sf::Vector3f>& v_, std::vect
 
 float norm(const sf::Vector3f& nn)  { return std::sqrt(nn.x * nn.x + nn.y * nn.y + nn.z * nn.z); }
 
-int main()
+int main(int argc, char** argv)
 {
+    char* file_name;
+    if (2 == argc) 
+        file_name = argv[1];
+    else
+        file_name = "..//obj//african_head.obj";
     Model model;
     model.vertex.setPrimitiveType(sf::Points);
-    char* file_name = "..//obj//african_head.obj";
     Parser_file(file_name, model.v, model.f);
     sf::Vector3f light_dir(0, 0, -1);
     for (int i = 0; i < model.f.size() - 4; i += 3) {
-        sf::Vector2i screen_coords[3];
+        sf::Vector3i screen_coords[3];
         sf::Vector3f world_coords[3];
         for (int j = 0; j < 3; j++) {
             int tmp = model.f[i + j];
-            screen_coords[j] = sf::Vector2i((model.v[tmp].x + 1.) * WIDTH / 2., (model.v[tmp].y + 1.) * HEIGHT / 2.);
+            screen_coords[j] = sf::Vector3i((model.v[tmp].x + 1.) * WIDTH / 2., (model.v[tmp].y + 1.) * HEIGHT / 2., model.v[tmp].z * WIDTH / 2.);
             world_coords[j] = model.v[tmp];
         }
         sf::Vector3f V1 = world_coords[2] - world_coords[0];
@@ -115,7 +133,7 @@ int main()
         n = { n.x * (1 / norm(n)), n.y * (1 / norm(n)), n.z * (1 / norm(n)) };
         intensity = n.x * light_dir.x + n.y * light_dir.y + n.z * light_dir.z;
         if (intensity > 0)
-            triangle(screen_coords[0], screen_coords[1], screen_coords[2], model.vertex, sf::Color::Color(intensity * 255, intensity * 255, intensity * 255, 255));
+            triangle(screen_coords[0], screen_coords[1], screen_coords[2], model, sf::Color::Color(intensity * 255, intensity * 255, intensity * 255, 255));
     }
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "simplified OpenGL");
     while (window.isOpen())
