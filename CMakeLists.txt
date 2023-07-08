@@ -3,8 +3,8 @@
 project(SFMLTest VERSION 1.0 
  DESCRIPTION "SFML test"
  LANGUAGES CXX)
-set(CMAKE_CXX_STANDARD 11)
-set(SOURCES main.cpp)
+set(CMAKE_CXX_STANDARD 14)
+set(SOURCES main.cpp funct.cpp)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/obj/")
 #message("${CMAKE_CURRENT_SOURCE_DIR}/obj/")
@@ -23,7 +23,7 @@ endif()
 # Подключаем SFML
 find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
 
-add_executable(SFMLTest main.cpp)
+add_executable(SFMLTest main.cpp funct.cpp)
 
 # Линкуем SFML
 target_link_libraries(SFMLTest sfml-graphics sfml-audio)
