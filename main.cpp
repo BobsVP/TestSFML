@@ -1,25 +1,27 @@
-#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+//#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #include<cmath>
 #include "Head.h"
+#include"config.h"
 
 void triangle(Draw& drw, Model& vert);
-void Parser_file(const char* file_name, Model& mod);
+void Parser_file(const std::string file_name, Model& mod);
 float norm(const sf::Vector3f& nn);
 
 int main(int argc, char** argv)
 {
-    char* file_name;
+    std::string file_name;
     if (2 == argc) 
         file_name = argv[1];
-    else
-        file_name = "..//obj//african_head.obj";
+    else {
+        file_name = Dt_Srcs;
+    }
     Model model;
     model.vertex.setPrimitiveType(sf::Points);
-    Parser_file(file_name, model);
+    Parser_file(file_name + "african_head.obj", model);
     
     Draw drawstruct;
     std::ifstream in;
-    in.open("..//obj//african_head_diffuse.tga", std::ios::binary);
+    in.open(file_name + "african_head_diffuse.tga", std::ios::binary);
     if (!in.is_open()) {
         std::cerr << "can't open file african_head_diffuse.tga" << "\n";
         in.close();

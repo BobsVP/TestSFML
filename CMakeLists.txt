@@ -6,9 +6,16 @@ project(SFMLTest VERSION 1.0
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(SOURCES main.cpp funct.cpp Head.h)
+#Добавление переменной с путем до файлов источников 
+set(Data_Source "${CMAKE_CURRENT_SOURCE_DIR}/obj/")
+#message(${Data_Source})
+# Генерирация заголовочного файла
+configure_file (config.h.in config.h @ONLY)
+# Путь к директории где искать сгенерированный файл
+include_directories ("${PROJECT_BINARY_DIR}")
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/obj/")
-message("${CMAKE_CURRENT_SOURCE_DIR}/obj/")
+
 # Условие для операционной системы Ubuntu
 if(UNIX AND NOT APPLE)
     set(SFML_DIR "${CMAKE_CURRENT_SOURCE_DIR}/SFML-2.5.1/lib/cmake/SFML")

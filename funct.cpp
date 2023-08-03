@@ -65,7 +65,7 @@ void triangle(Draw& drw, Model& vert) {
 
 }
 
-void Parser_file(const char* file_name, Model& mod)
+void Parser_file(const std::string file_name, Model& mod)
 {
     std::ifstream in;
     in.open(file_name, std::ifstream::in);
