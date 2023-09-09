@@ -28,4 +28,3 @@ add_executable(SFMLTest main.cpp funct.cpp)
 # Линкуем SFML
 target_link_libraries(SFMLTest sfml-graphics sfml-audio)
 
-

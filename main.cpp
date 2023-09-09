@@ -1,9 +1,11 @@
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
-#include <SFML/Graphics.hpp>
+#include "SFML/Graphics.hpp"
 #include<iostream>
 #include<cmath>
 #include<fstream>
-#include <sstream>
+#include<sstream>
+//#include<memory.h>
+#include<limits>
 
 unsigned const WIDTH = 800;
 unsigned const HEIGHT = 800;
