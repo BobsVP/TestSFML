@@ -1,106 +1,27 @@
-#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
-#include "SFML/Graphics.hpp"
-#include<iostream>
+//#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #include<cmath>
-#include<fstream>
-#include<sstream>
-//#include<memory.h>
-#include<limits>
-
-unsigned const WIDTH = 800;
-unsigned const HEIGHT = 800;
-const int DEPTH = 255;
-struct Draw
-{
-    sf::Vector3i s_c[3];
-    sf::Vector2i vt[3];
-    sf::Color colr;
-    float intensity;
-};
-struct SidesTriangle
-{
-    std::vector<sf::Vector3i> sides[3];
-    std::vector<sf::Vector2i> textures[3];
-};
-struct Model
-{
-    Model() {
-        for (size_t i = 0; i < WIDTH * HEIGHT; ++i)
-            Z_bufer[i] = std::numeric_limits<int>::min();
-    }
-    sf::VertexArray vertex;
-    sf::VertexArray vertex_texture;
-    std::vector<sf::Vector3f> v;
-    std::vector<sf::Vector2f> vt;
-    std::vector<sf::Vector3i> f;
-    std::unique_ptr<int[]> Z_bufer = std::make_unique<int[]> (WIDTH * HEIGHT);
-};
+#include "Head.h"
+#include"config.h"
 
 void triangle(Draw& drw, Model& vert);
-void Parser_file(const char* file_name, Model& mod);
+void Parser_file(const std::string file_name, Model& mod);
 float norm(const sf::Vector3f& nn);
+void ReadTGA(const std::string file_name, Model& mod);
 
 int main(int argc, char** argv)
 {
-    char* file_name;
+    std::string file_name;
     if (2 == argc) 
         file_name = argv[1];
-    else
-        file_name = "..//obj//african_head.obj";
+    else {
+        file_name = Dt_Srcs;
+    }
     Model model;
     model.vertex.setPrimitiveType(sf::Points);
-    Parser_file(file_name, model);
+    Parser_file(file_name + "african_head.obj", model);
     
+    ReadTGA(file_name + "african_head_diffuse.tga", model);
     Draw drawstruct;
-    std::ifstream in;
-    in.open("..//obj//african_head_diffuse.tga", std::ios::binary);
-    if (!in.is_open()) {
-        std::cerr << "can't open file african_head_diffuse.tga" << "\n";
-        in.close();
-        return false;
-    }
-    int trash;
-    sf::Color color_texture;
-    unsigned char chunkheader = 0;
-    bool flag = 0;
-    char datatypecode;
-    short width, height, bitsperpixel;
-    in.read((char*)&trash, 2);
-    in.read((char*)&datatypecode, 1);
-    in.read((char*)&trash, 4);
-    in.read((char*)&trash, 4);
-    in.read((char*)&trash, 1);
-    in.read((char*)&width, 2);
-    in.read((char*)&height, 2);
-    in.read((char*)&bitsperpixel, 2);
-    for (size_t i = height; 1 <= i; i--)
-    {
-        for (size_t j = 1; j <= width; j++)
-        {
-            if (chunkheader == 0) {
-                chunkheader = in.get();
-                if (chunkheader < 128) {
-                    chunkheader++;
-                    flag = 1;
-                }
-                else {
-                    chunkheader -= 127;
-                    flag = 0;
-                }
-                color_texture.b = in.get();
-                color_texture.g = in.get();
-                color_texture.r = in.get();
-            }
-            model.vertex_texture.append(sf::Vector2f(j, i));
-            model.vertex_texture[model.vertex_texture.getVertexCount() - 1].color = color_texture;
-            chunkheader--;
-            if (flag && chunkheader) {
-                color_texture.b = in.get();
-                color_texture.g = in.get();
-                color_texture.r = in.get();
-            }
-        }
-    }
 
     sf::Vector3f light_dir(0, 0, -1);
     for (size_t i = 0; i < model.f.size() - 4; i += 3) {
@@ -119,7 +40,7 @@ int main(int argc, char** argv)
         if (drawstruct.intensity > 0) {
             for (size_t k = 0; k < 3; k++) {
                 int tm = model.f[i + k].y;
-                drawstruct.vt[k] = sf::Vector2i(model.vt[tm].x * width, model.vt[tm].y * height);
+                drawstruct.vt[k] = sf::Vector2i(model.vt[tm].x * 1024, model.vt[tm].y * 1024);
             }
             triangle(drawstruct, model);
         }
