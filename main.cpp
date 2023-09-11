@@ -3,10 +3,10 @@
 #include "Head.h"
 #include"config.h"
 
-void triangle(Draw& drw, Model& vert);
+void triangle(Draw& drw, Model& vert, Texture& tex);
 void Parser_file(const std::string file_name, Model& mod);
 float norm(const sf::Vector3f& nn);
-void ReadTGA(const std::string file_name, Model& mod);
+void ReadTGA(const std::string file_name, Texture& tex);
 
 int main(int argc, char** argv)
 {
@@ -20,7 +20,8 @@ int main(int argc, char** argv)
     model.vertex.setPrimitiveType(sf::Points);
     Parser_file(file_name + "african_head.obj", model);
     
-    ReadTGA(file_name + "african_head_diffuse.tga", model);
+    Texture HeadTexture;
+    ReadTGA(file_name + "african_head_diffuse.tga", HeadTexture);
     Draw drawstruct;
 
     sf::Vector3f light_dir(0, 0, -1);
@@ -42,7 +43,7 @@ int main(int argc, char** argv)
                 int tm = model.f[i + k].y;
                 drawstruct.vt[k] = sf::Vector2i(model.vt[tm].x * 1024, model.vt[tm].y * 1024);
             }
-            triangle(drawstruct, model);
+            triangle(drawstruct, model, HeadTexture);
         }
     }
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "simplified OpenGL");

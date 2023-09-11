@@ -9,6 +9,15 @@ unsigned const WIDTH = 800;
 unsigned const HEIGHT = 800;
 const int DEPTH = 255;
 
+struct Texture
+{
+    short width;
+    short height;
+    short bitsperpixel;
+    char datatypecode;
+    sf::VertexArray vertex_texture;
+};
+
 struct Draw
 {
     sf::Vector3i s_c[3];
@@ -30,7 +39,7 @@ struct Model
             Z_bufer[i] = std::numeric_limits<int>::min();
     }
     sf::VertexArray vertex;
-    sf::VertexArray vertex_texture;
+    //sf::VertexArray vertex_texture;
     std::vector<sf::Vector3f> v;
     std::vector<sf::Vector2f> vt;
     std::vector<sf::Vector3i> f;

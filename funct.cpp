@@ -1,7 +1,7 @@
 #include "Head.h"
 
 
-void line2(Draw& drw, SidesTriangle& trg, Model& vert) {        //заполняем треугольник
+void line2(Draw& drw, SidesTriangle& trg, Model& vert, Texture& tex) {        //заполняем треугольник
     
     for (size_t i = 0; i < trg.sides[2].size(); ++i) {
         sf::Vector3i A = trg.sides[2].operator[](i);
@@ -30,7 +30,7 @@ void line2(Draw& drw, SidesTriangle& trg, Model& vert) {        //заполняем треу
                 if (P.z > vert.Z_bufer[P.x * WIDTH + P.y]) {
                     vert.Z_bufer[P.x * WIDTH + P.y] = P.z;
                     vert.vertex.append(sf::Vector2f(P.x, HEIGHT - P.y));
-                    drw.colr = vert.vertex_texture.operator[](Ptx.x + 1024 * Ptx.y).color;
+                    drw.colr = tex.vertex_texture.operator[](Ptx.x + tex.width * Ptx.y).color;
                     drw.colr = sf::Color(drw.colr.r * drw.intensity, drw.colr.g * drw.intensity, drw.colr.b * drw.intensity);
                     vert.vertex[vert.vertex.getVertexCount() - 1].color = drw.colr;
                 }
@@ -54,14 +54,14 @@ void line1(Draw& drw, SidesTriangle& trg) {     //определяем границы треугольник
     }
 }
 
-void triangle(Draw& drw, Model& vert) {
+void triangle(Draw& drw, Model& vert, Texture& tex) {
     if (drw.s_c[0].y > drw.s_c[1].y) { std::swap(drw.s_c[0], drw.s_c[1]); std::swap(drw.vt[0], drw.vt[1]); }
     if (drw.s_c[0].y > drw.s_c[2].y) { std::swap(drw.s_c[0], drw.s_c[2]); std::swap(drw.vt[0], drw.vt[2]); }
     if (drw.s_c[1].y > drw.s_c[2].y) { std::swap(drw.s_c[1], drw.s_c[2]); std::swap(drw.vt[1], drw.vt[2]); }
 
     SidesTriangle Trg;
     line1(drw, Trg);
-    line2(drw, Trg, vert);
+    line2(drw, Trg, vert, tex);
 
 }
 
@@ -104,7 +104,7 @@ void Parser_file(const std::string file_name, Model& mod)       //читаем файл мо
 
 float norm(const sf::Vector3f& nn)  { return std::sqrt(nn.x * nn.x + nn.y * nn.y + nn.z * nn.z); }
 
-void ReadTGA(const std::string file_name, Model& mod) {
+void ReadTGA(const std::string file_name, Texture& tex) {
     std::ifstream in;
     in.open(file_name, std::ios::binary);
     if (!in.is_open()) {
@@ -116,19 +116,19 @@ void ReadTGA(const std::string file_name, Model& mod) {
     sf::Color color_texture;
     unsigned char chunkheader = 0;
     bool flag = 0;
-    char datatypecode;
-    short width, height, bitsperpixel;
+    //char datatypecode;
+    //short width, height, bitsperpixel;
     in.read((char*)&trash, 2);
-    in.read((char*)&datatypecode, 1);
+    in.read((char*)&tex.datatypecode, 1);
     in.read((char*)&trash, 4);
     in.read((char*)&trash, 4);
     in.read((char*)&trash, 1);
-    in.read((char*)&width, 2);
-    in.read((char*)&height, 2);
-    in.read((char*)&bitsperpixel, 2);
-    for (size_t i = height; 1 <= i; i--)
+    in.read((char*)&tex.width, 2);
+    in.read((char*)&tex.height, 2);
+    in.read((char*)&tex.bitsperpixel, 2);
+    for (size_t i = tex.height; 1 <= i; i--)
     {
-        for (size_t j = 1; j <= width; j++)
+        for (size_t j = 1; j <= tex.width; j++)
         {
             if (chunkheader == 0) {
                 chunkheader = in.get();
@@ -144,8 +144,8 @@ void ReadTGA(const std::string file_name, Model& mod) {
                 color_texture.g = in.get();
                 color_texture.r = in.get();
             }
-            mod.vertex_texture.append(sf::Vector2f(j, i));
-            mod.vertex_texture[mod.vertex_texture.getVertexCount() - 1].color = color_texture;
+            tex.vertex_texture.append(sf::Vector2f(j, i));
+            tex.vertex_texture[tex.vertex_texture.getVertexCount() - 1].color = color_texture;
             chunkheader--;
             if (flag && chunkheader) {
                 color_texture.b = in.get();
