@@ -22,17 +22,18 @@ void line2(Draw& drw, SidesTriangle& trg, Model& vert, Texture& tex) {        //
                 std::swap(B, A);
                 std::swap(Btx, Atx);
             }
+            sf::Color colr;
             for (size_t j = A.x; j <= B.x; j++)
             {
                 float phi = B.x == A.x ? 1. : (float)(j - A.x) / (float)(B.x - A.x);
                 sf::Vector3i P = A + sf::Vector3i((B.x - A.x) * phi + .5, (B.y - A.y) * phi + .5, (B.z - A.z) * phi + .5);
                 sf::Vector2i Ptx = Atx + sf::Vector2i((Btx.x - Atx.x) * phi + .5, (Btx.y - Atx.y) * phi + .5);
-                if (P.z > vert.Z_bufer[P.x * WIDTH + P.y]) {
-                    vert.Z_bufer[P.x * WIDTH + P.y] = P.z;
-                    vert.vertex.append(sf::Vector2f(P.x, HEIGHT - P.y));
-                    drw.colr = tex.vertex_texture.operator[](Ptx.x + tex.width * Ptx.y).color;
-                    drw.colr = sf::Color(drw.colr.r * drw.intensity, drw.colr.g * drw.intensity, drw.colr.b * drw.intensity);
-                    vert.vertex[vert.vertex.getVertexCount() - 1].color = drw.colr;
+                if (P.z > drw.Z_bufer[P.x * WIDTH + P.y]) {
+                    drw.Z_bufer[P.x * WIDTH + P.y] = P.z;
+                    drw.vertex.append(sf::Vector2f(P.x, HEIGHT - P.y));
+                    colr = tex.vertex_texture.operator[](Ptx.x + tex.width * Ptx.y).color;
+                    colr = sf::Color(colr.r * drw.intensity, colr.g * drw.intensity, colr.b * drw.intensity);
+                    drw.vertex[drw.vertex.getVertexCount() - 1].color = colr;
                 }
             }
         }
@@ -90,12 +91,20 @@ void Parser_file(const std::string file_name, Model& mod)       //читаем файл мо
             iss >> uv.x >> uv.y;
             mod.vt.push_back(uv);
         }
+        else if (!line.compare(0, 3, "vn ")) {
+            iss >> trash >> trash;
+            sf::Vector2f un;
+            iss >> un.x >> un.y;
+            mod.vn.push_back(un);
+        }
         else if (!line.compare(0, 2, "f ")) {
             sf::Vector3i idx;
+            int x = 0;
             iss >> trash;
             while (iss >> idx.x >> trash >> idx.y >> trash >> idx.z) {
                 --idx.x; --idx.y; --idx.z;
-                mod.f.push_back(idx);
+                mod.f[x % 3].push_back(idx);
+                ++x;
             }
         }
     }
