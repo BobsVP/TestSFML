@@ -113,6 +113,15 @@ void Parser_file(const std::string file_name, Model& mod)       //читаем файл мо
 
 float norm(const sf::Vector3f& nn)  { return std::sqrt(nn.x * nn.x + nn.y * nn.y + nn.z * nn.z); }
 
+sf::Vector3i conv3f3i(const sf::Vector3f& vec) {
+    sf::Vector3i tmp;
+    tmp.x = vec.x + 0.5;
+    tmp.y = vec.y + 0.5;
+    tmp.z = vec.z + 0.5;
+    return tmp;
+}
+
+
 void ReadTGA(const std::string file_name, Texture& tex) {
     std::ifstream in;
     in.open(file_name, std::ios::binary);
@@ -125,8 +134,6 @@ void ReadTGA(const std::string file_name, Texture& tex) {
     sf::Color color_texture;
     unsigned char chunkheader = 0;
     bool flag = 0;
-    //char datatypecode;
-    //short width, height, bitsperpixel;
     in.read((char*)&trash, 2);
     in.read((char*)&tex.datatypecode, 1);
     in.read((char*)&trash, 4);

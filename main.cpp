@@ -3,10 +3,14 @@
 #include "Head.h"
 #include"config.h"
 
+sf::Vector3f light_dir(0, 0, -1);
+sf::Vector3f camera(0, 0, 2);
+
 void triangle(Draw& drw, Model& vert, Texture& tex);
 void Parser_file(const std::string file_name, Model& mod);
 float norm(const sf::Vector3f& nn);
 void ReadTGA(const std::string file_name, Texture& tex);
+sf::Vector3i conv3f3i(const sf::Vector3f& vec);
 
 int main(int argc, char** argv)
 {
@@ -24,8 +28,13 @@ int main(int argc, char** argv)
     Draw drawstruct;
     drawstruct.vertex.setPrimitiveType(sf::Points);
 
-    sf::Vector3f light_dir(0, 0, -1);
-    sf::Vector3f camera(0, 0, 3);
+    Matrix<float> Projection;
+    Projection.identity();
+    Projection[3][2] = -1.f / camera.z;
+    Matrix<float> ViewPort; 
+    ViewPort.identity();
+    viewport(ViewPort, WIDTH / 8, HEIGHT / 8, WIDTH * 3 / 4, HEIGHT * 3 / 4);
+
     for (size_t i = 0; i < model.f[0].size(); ++i) {
         float Width2 = WIDTH / 2.;
         float Height2 = HEIGHT / 2.;
@@ -33,7 +42,7 @@ int main(int argc, char** argv)
         sf::Vector3f world_coords[3];
         for (size_t j = 0; j < 3; j++) {
             int tmp = model.f[j][i].x;
-            drawstruct.s_c[j] = sf::Vector3i((model.v[tmp].x + 1.) * Width2, (model.v[tmp].y + 1.) * Height2, (model.v[tmp].z + 1.) * Depth2);
+            drawstruct.s_c[j] = conv3f3i(m2v<float>(ViewPort * Projection * v2m<float>(model.v[tmp])));
             world_coords[j] = model.v[tmp];
         }
         sf::Vector3f V1 = world_coords[2] - world_coords[0];
